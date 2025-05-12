@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Skill Diagnostic Tool </title>
+  <style>
+    /* Sustainable, eco-friendly look */
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f5f5f5; /* Light, neutral background */
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+    
+    .container {
+      width: 90%;
+      max-width: 800px;
+      margin: 30px auto;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    h1, h2 {
+      text-align: center;
+      color: #2e7d32; /* Earthy green */
+    }
+    
+    h2 {
+      margin-top: 30px;
+      font-size: 1.4em;
+    }
+    
+    form {
+      margin-top: 20px;
+    }
+    
+    label {
+      display: block;
+      margin-top: 15px;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    
+    input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    
+    button {
+      background-color: #2e7d32;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      margin-top: 15px;
+      cursor: pointer;
+      border-radius: 4px;
+      font-size: 16px;
+      transition: background-color 0.3s;
+    }
+    
+    button:hover {
+      background-color: #1b5e20;
+    }
+    
+    .results {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #e8f5e9;
+      border: 1px solid #c8e6c9;
+      border-radius: 4px;
+      overflow-x: auto;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+    
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+      vertical-align: top;
+    }
+    
+    th {
+      background-color: #c8e6c9;
+    }
+    
+    ul {
+      margin: 0;
+      padding-left: 20px;
+    }
+    
+    .error {
+      color: red;
+      margin-top: 10px;
+    }
+    
+    /* Ensure the checkbox cell is centered */
+    .checkbox-cell {
+      text-align: center;
+      width: 50px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Skill Diagnostic Tool</h1>
+    
+    <!-- Section 1: Search Jobs by Skills -->
+    <h2>Search Jobs by Skills</h2>
+    <form id="jobSearchForm">
+      <label for="skillsInput">Enter Skills (comma separated):</label>
+      <input type="text" id="skillsInput" placeholder="e.g. python, flask">
+      <button type="submit">Search Jobs</button>
+    </form>
+    <div id="jobsResult" class="results"></div>
+    
+    <!-- Section 2: Job Details in a Table -->
+    <h2>Missing Skills & Recommendations</h2>
+    <button id="getJobDetailsBtn">Get Recommendations</button>
+    <div id="jobDetailsResult" class="results"></div>
+  </div>
+  
+  <script>
+    // Base URL of the Flask API
+    const BASE_URL = "http://127.0.0.1:5000";
+    
+    // Helper to create an element with text and optional class
+    function createElement(tag, text, className) {
+      const el = document.createElement(tag);
+      if (text) el.textContent = text;
+      if (className) el.className = className;
+      return el;
+    }
+    
+    // Render job search results in a table with checkboxes
+    function renderJobTable(jobs) {
+      const table = document.createElement("table");
+      const thead = document.createElement("thead");
+      thead.innerHTML = `
+        <tr>
+          <th class="checkbox-cell"></th>
+          <th style="display: none;">ID</th>
+          <th>Title</th>
+          <th>Company</th>
+          <th>Location</th>
+        </tr>
+      `;
+      table.appendChild(thead);
+      
+      const tbody = document.createElement("tbody");
+      jobs.forEach(job => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td class="checkbox-cell"><input type="checkbox" value="${job.id}" id="job_${job.id}"></td>
+          <td style="display: none;">${job.id}</td>
+          <td>${job.title}</td>
+          <td>${job.company}</td>
+          <td>${job.location}</td>
+        `;
+        tbody.appendChild(row);
+      });
+      table.appendChild(tbody);
+      return table;
+    }
+    
+    // Handle job search form submission
+    document.getElementById("jobSearchForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const skillsInput = document.getElementById("skillsInput").value;
+      const skills = skillsInput.split(",").map(s => s.trim()).filter(s => s);
+      
+      const jobsResultDiv = document.getElementById("jobsResult");
+      jobsResultDiv.innerHTML = "";
+      
+      fetch(BASE_URL + "/jobs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ skills })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.error) {
+          jobsResultDiv.appendChild(createElement("p", data.error, "error"));
+          return;
+        }
+        if (data.length === 0) {
+          jobsResultDiv.appendChild(createElement("p", "No jobs found."));
+          return;
+        }
+        const table = renderJobTable(data);
+        jobsResultDiv.appendChild(table);
+      })
+      .catch(err => {
+        jobsResultDiv.appendChild(createElement("p", "An error occurred.", "error"));
+        console.error(err);
+      });
+    });
+    
+    // Handle job details button click to display details in a table
+    document.getElementById("getJobDetailsBtn").addEventListener("click", function() {
+      // Use skills from the first text box
+      const skillsInput = document.getElementById("skillsInput").value;
+      const userSkills = skillsInput.split(",").map(s => s.trim()).filter(s => s);
+      
+      // Get selected job IDs from checkboxes in jobsResult
+      const jobCheckboxes = document.querySelectorAll("#jobsResult input[type='checkbox']:checked");
+      const jobIds = Array.from(jobCheckboxes).map(cb => parseInt(cb.value));
+      
+      if (jobIds.length === 0) {
+        alert("Please select at least one job from the job list.");
+        return;
+      }
+      
+      const jobDetailsResultDiv = document.getElementById("jobDetailsResult");
+      // Clear previous recommendations before fetching new ones
+      jobDetailsResultDiv.innerHTML = "";
+      
+      fetch(BASE_URL + "/job_details", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ job_ids: jobIds, user_skills: userSkills })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.error) {
+          jobDetailsResultDiv.appendChild(createElement("p", data.error, "error"));
+          return;
+        }
+        if (!Array.isArray(data)) {
+          jobDetailsResultDiv.appendChild(createElement("p", "Unexpected response format.", "error"));
+          return;
+        }
+        
+        // Create table for job details
+        const table = document.createElement("table");
+        const thead = document.createElement("thead");
+        thead.innerHTML = `
+          <tr>
+            <th>Title</th>
+            <th>Company</th>
+            <th>Location</th>
+            <th>Missing skills & Recommended courses</th>
+          </tr>
+        `;
+        table.appendChild(thead);
+        
+        const tbody = document.createElement("tbody");
+        data.forEach(item => {
+          const row = document.createElement("tr");
+          if (item.error) {
+            const errorCell = document.createElement("td");
+            errorCell.colSpan = 5;
+            errorCell.className = "error";
+            errorCell.textContent = `Job ID ${item.job_id}: ${item.error}`;
+            row.appendChild(errorCell);
+          } else {
+            // Build bullet list for the combined missing skills and courses
+            let combinedHTML = "None";
+            if (item.missing_skills_courses && item.missing_skills_courses.length > 0) {
+              combinedHTML = `<ul>${item.missing_skills_courses.map(entry => `<li>${entry}</li>`).join('')}</ul>`;
+            }
+            
+            row.innerHTML = `
+              <td>${item.job.title}</td>
+              <td>${item.job.company}</td>
+              <td>${item.job.location}</td>
+              <td>${combinedHTML}</td>
+            `;
+          }
+          tbody.appendChild(row);
+        });
+        table.appendChild(tbody);
+        jobDetailsResultDiv.appendChild(table);
+      })
+      .catch(err => {
+        jobDetailsResultDiv.appendChild(createElement("p", "An error occurred.", "error"));
+        console.error(err);
+      });
+    });
+  </script>
+</body>
+</html>
