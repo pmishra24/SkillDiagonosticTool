@@ -1,22 +1,22 @@
-**For backend:**
-Create virtual environment
+**For backend:**<br/>
+Create virtual environment<br/><br/>
 
-pip3 install pandas or pip install pandas
-pip3 install flask or pip install pandas
-pip3 install flask_cors or pip install pandas
+_pip3 install pandas_ **OR** _pip install pandas_<br/>
+_pip3 install flask_ **OR** _pip install pandas_<br/>
+_pip3 install flask_cor_s **OR** p_ip install pandas_<br/><br/>
 
-python3 skill_diagnostic_tool.py or python skill_diagnostic_tool.py
+_python3 skill_diagnostic_tool.py_ **OR** _python skill_diagnostic_tool.py_<br/><br/>
 
-**For Frontend:**
-If Node.js + npm installed (recommended)
-Open new terminal 
-Go to my-app1 folder -> cd my-app1
+**For Frontend:**<br/>
+If Node.js + npm installed (**Recommended**)<br/>
+Open new terminal <br/>
+Go to my-app1 folder -> _cd my-app1_<br/><br/>
 
-npm install
+_npm install_<br/><br/>
 
-npm start
+_npm start_<br/><br/>
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+Runs the app in the development mode.<br/>
+Open [http://localhost:3000](http://localhost:3000) to view it in your browser.<br/><br/>
 
-If Node.js + npm is not installed then you can test the backend feature by running skill_diagnostic_tool.html on browser
+If Node.js + npm is not installed then you can test the backend feature by running skill_diagnostic_tool.html on browser<br/>
