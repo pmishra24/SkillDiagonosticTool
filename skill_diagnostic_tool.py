@@ -178,7 +178,7 @@ def get_job_details():
 
         results.append({
             "job": {
-                "id": job_dict["id"],
+                "id": str(job_dict["id"]),
                 "title": job_dict["title"],
                 "company": job_dict["company"],
                 "location": job_dict["location"],
