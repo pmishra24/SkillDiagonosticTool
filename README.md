@@ -3,7 +3,7 @@ Create virtual environment<br/><br/>
 
 _pip3 install pandas_ **OR** _pip install pandas_<br/>
 _pip3 install flask_ **OR** _pip install pandas_<br/>
-_pip3 install flask_cor_s **OR** _pip install pandas_<br/><br/>
+_pip3 install flask cors_ **OR** _pip install pandas_<br/><br/>
 
 _python3 skill_diagnostic_tool.py_ **OR** _python skill_diagnostic_tool.py_<br/><br/>
 
