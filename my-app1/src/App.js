@@ -3,7 +3,8 @@ import { Helmet, HelmetProvider } from 'react-helmet-async';
 import './App.css';
 import logo from './logo.png';
 
-const BASE_URL = "http://127.0.0.1:5000";
+//const BASE_URL = "http://127.0.0.1:5000";
+const BASE_URL = "https://skilldiagonostictool.onrender.com"
 
 // JobCard renders a job with title, company, location, match score (if available)
 // for the search results, along with a selectable checkbox.
