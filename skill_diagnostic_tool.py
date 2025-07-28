@@ -1,9 +1,9 @@
 import pandas as pd
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import difflib
 import logging
 import re
+from rapidfuzz import fuzz, process
 
 app = Flask(__name__)
 
@@ -12,15 +12,36 @@ logging.basicConfig(level=logging.INFO)
 CORS(app, resources={r"/*": {"origins": "*"}})
 
 # ----- Load Data from CSV Files -----
-jobs = pd.read_csv('job_data_clean.csv')
-courses = pd.read_csv('course_data_clean.csv')
+jobs = pd.read_csv('job_data_clean_v2.0.csv')
+courses = pd.read_csv('course_data_clean_v2.0.csv', encoding='latin1')
 
+def normalize_string(s):
+    """Lowercase, strip punctuation and collapse whitespace."""
+    return re.sub(r'[^\w\s]', '', s).strip().lower()
+
+def custom_tokenizer(text):
+    """
+    Split a semicolon‑delimited 'skill:score' string into raw skill names.
+    E.g. "asp net:1.00; angular js:1.00" → ["asp net", "angular js"]
+    """
+    tokens = []
+    for seg in text.split(';'):
+        seg = seg.strip()
+        if not seg:
+            continue
+        tokens.append(seg.split(':', 1)[0].strip())
+    return tokens
 
 # ----- Preprocessing Functions -----
 def preprocess_jobs(jobs_data):
     df = jobs_data.copy()
     df["all_skills"] = df["merged_skills"]
     df['id'] = range(1, len(df) + 1)
+    df['job_tokens'] = df['all_skills']\
+        .fillna('')\
+        .map(lambda txt: [t.lower() for t in custom_tokenizer(txt)])
+    df['job_norm'] = df['job_tokens']\
+        .map(lambda toks: [normalize_string(t) for t in toks])
     return df
 
 def preprocess_courses(courses_data):
@@ -32,62 +53,69 @@ def preprocess_courses(courses_data):
 jobs_df = preprocess_jobs(jobs)
 courses_df = preprocess_courses(courses)
 
-def custom_tokenizer(text):
-    tokens = []
-    
-    # Split the input string into segments using semicolon as the delimiter
-    for skill_score in text.split(';'):
-        skill_score = skill_score.strip()  # Remove any leading/trailing whitespace
-        if not skill_score:
-            continue  # Skip empty segments
-        
-        # Split the segment by colon to separate the skill from its score
-        parts = skill_score.split(':')
-        if parts:
-            # The skill name is before the colon
-            skill_name = parts[0].strip()
-            tokens.append(skill_name)
-    
-    return tokens
+FUZZY_THRESHOLD = 90
 
-# ----- Matching and Recommendation Functions -----
-def jaccard_similarity(set1, set2):
-    # If job_tokens are completely contained in user_tokens, then return a perfect score.
-    if set2.issubset(set1) :
-        return 1.0
-    # Otherwise, fall back to Jaccard similarity or another metric.
-    intersection = set1.intersection(set2)
-    union = set1.union(set2)
-    app.logger.info(intersection)
-    app.logger.info(union)
-    return float(len(intersection)) / len(union)
+def compute_match_score(
+    user_norm,
+    job_norm,
+    threshold):
+    """
+    Compute the fuzzy‑Jaccard match between two normalized token lists:
+      1) exact match for tokens <4 chars
+      2) fuzzy partial_ratio ≥ threshold for tokens ≥4 chars
+    Returns matched_count / union_count.
+    """
+    # Partition into short vs long
+    user_short = {u for u in user_norm if len(u) < 4}
+    user_long  = [u for u in user_norm if len(u) >= 4]
+    job_short  = {j for j in job_norm if len(j) < 4}
+    job_long   = [j for j in job_norm if len(j) >= 4]
 
-def match_jobs(user_skills, jobs_df, threshold=0.01):
-    user_skills_str = '; '.join(user_skills)
-    user_skills_set = set(custom_tokenizer(user_skills_str.lower()))
-    
-    match_scores = []
-    
-    # Compute Jaccard similarity for each job
-    for skills in jobs_df['all_skills'].fillna(""):
-        job_skills_set = set(custom_tokenizer(skills.lower()))
-        score = jaccard_similarity(user_skills_set, job_skills_set)
-        match_scores.append(score)
-    
-    jobs_df['match_score'] = match_scores
-    matching_jobs = jobs_df[jobs_df['match_score'] > threshold] \
-                        .sort_values(by='match_score', ascending=False) \
-                        .head(10)
-    
-    return matching_jobs
+    # Exact matches on short tokens
+    exact_matches = user_short & job_short
 
+    # Fuzzy matches on long tokens
+    fuzzy_matches = 0
+    if user_long and job_long:
+        for jt in job_long:
+            best = process.extractOne(jt, user_long, scorer=fuzz.partial_ratio)
+            if best and best[1] >= threshold:
+                fuzzy_matches += 1
 
-def is_skill_present(target_skill, user_skills, cutoff=0.8):
-    target_skill_clean = target_skill.lower().strip()
+    matched_count = len(exact_matches) + fuzzy_matches
+    union_count   = len(set(job_norm))
+    return matched_count / union_count if union_count else 0.0
+
+def match_jobs(user_skills, jobs_df, threshold = 0.01):
+    """
+    Top‑10 jobs by match_score > threshold, using compute_match_score.
+    """
+    # Normalize user once
+    user_norm = [normalize_string(s) for s in user_skills]
+
+    # Compute scores
+    scores = [
+        compute_match_score(user_norm, job_norm, FUZZY_THRESHOLD)
+        for job_norm in jobs_df['job_norm']
+    ]
+
+    jobs_df['match_score'] = scores
+    return (
+        jobs_df[jobs_df['match_score'] > threshold]
+          .sort_values('match_score', ascending=False)
+          .head(10)
+    )
+
+def is_skill_present(target_skill, user_skills, cutoff=0.9):
+    
+    j = normalize_string(target_skill)
     for skill in user_skills:
-        similarity = difflib.SequenceMatcher(None, target_skill_clean, skill.lower().strip()).ratio()
-        if similarity >= cutoff:
+        u = normalize_string(skill)
+        if len(u) < 4:
+            return u == j
+        elif fuzz.partial_ratio(u, j) >= FUZZY_THRESHOLD:
             return True
+
     return False
 
 def recommend_courses(user_skills, target_job_skills, courses_df):

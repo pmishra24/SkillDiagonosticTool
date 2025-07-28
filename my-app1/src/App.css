@@ -1,316 +1,307 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
 
-/* Brand colors */
+/* ————— Global reset & base ————— */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 :root {
-  --primary-green: #2e7d32;
-  --primary-green-dark: #1b5e20;
-  --primary-green-light: #c8e6c9;
+  --green:         #2e7d32;
+  --green-dark:    #1b5e20;
+  --green-light:   #e4f1e5;
+  --gray-200:      #ebeff4;
+  --gray-600:      #5f6773;
+  --font-base:     'Roboto', sans-serif;
 }
 
 body {
-  font-family: 'Roboto', Arial, sans-serif;
-  background-color: #f0f4f8;
-  color: #333;
   margin: 0;
   padding: 0;
+  font-family: var(--font-base);
+  background-color: #fff;            /* 1) page background white */
+  color: #333;
 }
 
-/* Main container */
+/* ————— Container ————— */
 .container {
-  width: 90%;
-  max-width: 900px;
-  margin: 40px auto;
-  padding: 30px;
-  background: #ffffff;
-  border-radius: 10px;
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
-}
-
-/* Header: inherits container’s white */
-.app-header {
-  background: transparent;
-  padding: 0;
-  margin-bottom: 2rem;
-}
-
-/* Stack logo above heading/tagline, centered, very tight gap */
-.app-header-inner {
+  max-width: 1000px;
+  margin: 2rem auto;
+  padding: 0 1rem;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 0.1rem;  /* minimal space between logo & heading */
+  gap: 2rem;
+  background-color: #fff;           /* 1) ensure behind all cards is white */
 }
 
-/* Logo sizing + hover */
+/* ————— Header ————— */
+.app-header-inner {
+  text-align: center;
+}
 .app-logo {
-  height: 70px;
-  width: auto;
-  transition: transform 0.2s ease-in-out;
+  height: 80px;
+  margin-bottom: 0.5rem;
+  transition: transform 0.2s;
 }
 .app-logo:hover {
-  transform: scale(1.1);
+  transform: scale(1.05);
+}
+/* 1) make title & tagline green‑tone */
+.app-header-text {
+  color: var(--green);      /* “Skill Diagnostic Tool” in logo‑green */
+  font-size: 2.5rem;        /* preserve your size */
+  margin: 0; 
+  margin-bottom: 0.75rem;               /* reset any browser defaults */
 }
 
-/* Title + tagline */
-.app-header-text h1 {
-  font-size: 2.75rem;
-  color: var(--primary-green);
-  margin: 0;
-  line-height: 1.1;
-  text-align: center;
-}
 .tagline {
-  margin: 0;
+  margin-top: 0;
+  color: var(--green-dark);
   font-size: 1.1rem;
-  color: #2f7d31;
-  text-align: center;
 }
 
-/* Sub‑heads for other sections */
-h1 {
-  /* for any other h1s */
-  text-align: center;
-  color: var(--primary-green);
-  margin-bottom: 20px;
-}
-h2 {
-  text-align: center;
-  color: var(--primary-green);
-  margin-top: 30px;
-  font-size: 1.6em;
-}
-
-/* Form elements */
-form {
-  margin-top: 20px;
-}
-label {
-  display: block;
-  margin-top: 15px;
-  margin-bottom: 5px;
-  font-weight: 500;
-}
-input[type="text"] {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  box-sizing: border-box;
-  margin-bottom: 10px;
-}
-
-/* Buttons */
-button {
-  background-color: var(--primary-green);
-  color: #fff;
-  border: none;
-  padding: 10px 20px;
-  margin-top: 15px;
-  cursor: pointer;
-  border-radius: 4px;
-  font-size: 16px;
-  transition: background-color 0.3s ease, transform 0.2s ease;
-}
-button:hover {
-  background-color: var(--primary-green-dark);
-  transform: translateY(-2px);
-}
-
-/* Results panel */
-.results {
-  margin-top: 20px;
-  padding: 15px;
-  background-color: #f2faf2;
-  border: 1px solid var(--primary-green-light);
-  border-radius: 4px;
-  overflow-x: auto;
-}
-
-/* Job cards */
-.job-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-  justify-content: center;
-}
-.job-card {
+/* ————— Section Cards ————— */
+.card {
   background: #fff;
-  border: 1px solid #e0e0e0;
   border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
   overflow: hidden;
-  flex: 1 1 calc(30% - 20px);
-  max-width: calc(30% - 20px);
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  transition: box-shadow 0.3s ease;
   display: flex;
   flex-direction: column;
 }
-.job-card:hover {
-  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-}
 
-.job-card-header {
-  background-color: var(--primary-green);
-  color: #fff;
-  padding: 8px 12px;
+/* Shared header/bar styling */
+.card-header {
+  background: var(--green-light);
+  padding: 1rem 1.5rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  border-bottom: 3px solid var(--green);
+}
+.card-header h2 {
+  margin: 0;
+  font-size: 1.4rem;
+  color: var(--green-dark);
+}
+
+/* Body area */
+.card-body {
+  padding: 1.5rem;
+}
+
+/* ————— Search‑Skills Card ————— */
+.search-card .card-header { /* already has green‑light bg + bottom border */ }
+.skill-input-section {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+.skill-input-section input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--gray-200);
+  border-radius: 4px;
+  font-size: 1rem;
+}
+.btn-add,
+.btn-search {
+  padding: 0.75rem 1.2rem;
+  font-size: 0.95rem;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.15s ease-in-out;
+}
+.btn-add {
+  background: #fff;
+  color: var(--green);
+  border-color: var(--green);
+}
+.btn-add:hover {
+  background: var(--green);
+  color: #fff;
+}
+.btn-search {
+  background: var(--green);
+  color: #fff;
+}
+.btn-search:hover {
+  background: var(--green-dark);
+}
+
+/* Skill tags */
+.skills-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.skill-tag {
+  display: inline-flex;
+  align-items: center;
+  background: var(--green-light);
+  color: var(--green-dark);
+  padding: 0.5rem 0.75rem;
+  border-radius: 16px;
+  font-size: 0.9rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+.remove-skill {
+  background: none;
+  border: none;
+  margin-left: 0.5rem;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: var(--green-dark);
+}
+.remove-skill:hover {
+  opacity: 0.6;
+}
+
+/* ————— Job Recommendations Card ————— */
+.rec-card .card-header { /* header bg + border already set */ }
+.rec-card .btn-getrec {
+  padding: 0.6rem 1rem;
+  background: var(--green);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+.rec-card .btn-getrec:hover {
+  background: var(--green-dark);
+}
+
+/* ————— Job list flex ————— */
+.job-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  justify-content: center;  /* center every row, even the last one */
+}
+
+/* ————— Job card ————— */
+.job-card {
+  flex: 0 0 240px;
+  background: #fafafa;
+  border: 1px solid var(--gray-200);
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.job-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.08);
+}
+.job-card-header {
+  background: var(--green);
+  color: #fff;
+  padding: 0.75rem 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+}
+.job-card-body {
+  padding: 1rem;
+  flex: 1;
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
 }
 .job-title {
   margin: 0;
-  font-size: 1.2em;
+  font-size: 1.05rem;
 }
 .job-checkbox {
-  cursor: pointer;
-  transform: scale(1.1);
+  transform: scale(1.2);
 }
-
-.job-card-body {
-  padding: 10px 12px;
-  color: #333;
-}
-
-/* Match score bar */
 .score-section {
-  margin-top: 10px;
-}
-.score-label {
-  margin: 0;
-  font-weight: 500;
-  color: #555;
+  margin-top: 0.75rem;
 }
 .score-bar {
-  position: relative;
-  width: 100%;
-  height: 8px;
-  background-color: #ddd;
+  background: var(--gray-200);
   border-radius: 4px;
-  margin-top: 5px;
+  height: 6px;
+  overflow: hidden;
 }
 .score-bar-fill {
-  background-color: var(--primary-green);
-  height: 8px;
-  border-radius: 4px;
+  background: var(--green);
+  height: 6px;
   transition: width 0.3s ease;
 }
+.score-label {
+  margin: 0 0 0.25rem;
+  font-size: 0.9rem;
+  color: var(--gray-600);
+}
 
-/* Recommendations table */
+/* ————— Missing Skills Card ————— */
 .details-table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 15px;
+  margin-top: 1rem;
 }
 .details-table th,
 .details-table td {
-  border: 1px solid #ddd;
-  padding: 10px;
+  border: 1px solid var(--gray-200);
+  padding: 0.75rem 1rem;
   text-align: left;
+  vertical-align: top;
 }
 .details-table th {
-  background-color: var(--primary-green-light);
+  background: var(--green-light);
+  color: var(--green-dark);
+  font-weight: 500;
 }
-
-/* Modal */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-.modal-content {
-  background: #fff;
-  padding: 20px;
-  border-radius: 8px;
-  max-width: 500px;
-  width: 90%;
-  position: relative;
-}
-.modal-close {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  background: transparent;
-  border: none;
-  font-size: 1.2em;
-  cursor: pointer;
-}
-.modal-body {
-  margin-top: 20px;
-}
-
 .show-more {
-  color: var(--primary-green);
-  text-decoration: underline;
+  background: none;
+  border: none;
+  color: var(--green-dark);
   cursor: pointer;
-  margin-left: 5px;
+  font-size: 0.9rem;
+  margin-left: 0.25rem;
 }
 
-/* Spinner */
+/* ————— Spinner & placeholders ————— */
 .spinner {
-  margin: 20px auto;
   width: 70px;
+  margin: 2rem auto;
   text-align: center;
 }
 .spinner > div {
   width: 18px;
   height: 18px;
-  background-color: var(--primary-green);
+  background: var(--green);
   border-radius: 100%;
   display: inline-block;
   animation: bouncedelay 1.4s infinite ease-in-out both;
 }
-.spinner .bounce1 { animation-delay: -0.32s; }
-.spinner .bounce2 { animation-delay: -0.16s; }
 @keyframes bouncedelay {
   0%, 80%, 100% { transform: scale(0); }
   40% { transform: scale(1.0); }
 }
-
+.placeholder {
+  color: var(--gray-600);
+  font-style: italic;
+}
 .error {
-  color: red;
-  margin-top: 10px;
+  color: #c62828;
+  margin: 1rem 0;
 }
 
-/* Responsive */
-@media (max-width: 900px) {
-  .job-card {
-    flex: 1 1 calc(45% - 20px);
-    max-width: calc(45% - 20px);
+/* ————— Responsive tweaks ————— */
+@media (max-width: 640px) {
+  .skill-input-section {
+    grid-template-columns: 1fr auto;
   }
-}
-
-@media (max-width: 600px) {
-  .container {
-    width: 95%;
-    padding: 20px;
-  }
-  .app-header-inner {
-    gap: 0.1rem;
-  }
-  .app-logo {
-    height: 100px;
-  }
-  .app-header-text h1 {
-    font-size: 2rem;
-  }
-  .tagline {
-    font-size: 1rem;
-  }
-  h1, h2 {
-    font-size: 1.5em;
-  }
-  .job-list {
-    gap: 10px;
-  }
-  .job-card {
-    flex: 1 1 100%;
-    max-width: 100%;
+  .btn-search {
+    grid-column: 1 / -1;
   }
 }
