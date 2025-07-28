@@ -4,7 +4,8 @@ import { Helmet, HelmetProvider } from 'react-helmet-async';
 import './App.css';
 import logo from './logo.png';
 
-const BASE_URL = "http://127.0.0.1:5000";
+// const BASE_URL = "http://127.0.0.1:5000";
+const BASE_URL = "https://skilldiagonostictool.onrender.com";
 
 function JobCard({ job, checked, onCheckboxChange }) {
   const matchScorePercentage = job.match_score != null
