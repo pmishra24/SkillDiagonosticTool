@@ -1,16 +1,142 @@
-// src/App.js
 import React, { useState } from 'react';
-import { Helmet } from 'react-helmet-async';
+import ReactDOM from 'react-dom';
+import { HelmetProvider, Helmet } from 'react-helmet-async';
 import logo from './logo.png';
-import JobCard from './components/JobCard/JobCard';
-import Modal from './components/Modal/Modal';
-import Spinner from './components/Spinner/Spinner';
-import { uniqueMerge } from './utils/skillUtils';
 import './App.css';
 
-const BASE_URL = 'http://127.0.0.1:5000';
+/** uniqueMerge util */
+function uniqueMerge(existing, toAdd) {
+  const lower = new Set(existing.map(s => s.toLowerCase()));
+  return [
+    ...existing,
+    ...toAdd.filter(s => !lower.has(s.toLowerCase())),
+  ];
+}
 
-export default function App() {
+/** Spinner component */
+function Spinner() {
+  return (
+    <div className="spinner">
+      <div className="bounce1" />
+      <div className="bounce2" />
+      <div className="bounce3" />
+    </div>
+  );
+}
+
+/** Modal component */
+function Modal({ content, onClose }) {
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={e => e.stopPropagation()}>
+        <button className="modal-close" onClick={onClose}>×</button>
+        <div className="modal-body">{content}</div>
+      </div>
+    </div>
+  );
+}
+
+/** JobCard component */
+function JobCard({ job, checked, onCheckboxChange }) {
+  const pct = job.match_score != null
+    ? (job.match_score * 100).toFixed(1)
+    : null;
+
+  return (
+    <div className="job-card">
+      <div className="job-card-header">
+        <h3 className="job-title">{job.title}</h3>
+        <input
+          type="checkbox"
+          checked={checked}
+          onChange={onCheckboxChange}
+          className="job-checkbox"
+        />
+      </div>
+      <div className="job-card-body">
+        <p><strong>Company:</strong> {job.company}</p>
+        <p><strong>Location:</strong> {job.location}</p>
+        {pct && (
+          <div className="score-section">
+            <p className="score-label"><strong>Match:</strong> {pct}%</p>
+            <div className="score-bar">
+              <div className="score-bar-fill" style={{ width: `${pct}%` }} />
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/** Stepper component with two connectors */
+function Stepper({ currentStep, onStepClick }) {
+  const isCompleted = step => currentStep > step;
+  const isActive = step => currentStep === step;
+
+  const renderCircle = (step) => {
+    if (isCompleted(step)) {
+      return (
+        <div className="circle completed">
+          <svg aria-hidden="true" viewBox="0 0 16 16" className="check-icon">
+            <path
+              d="M4 8l3 3 5-5"
+              fill="none"
+              stroke="white"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </div>
+      );
+    }
+    return (
+      <div className="circle">
+        <span className="number">{step}</span>
+      </div>
+    );
+  };
+
+  return (
+    <div className="stepper-wrapper">
+      <div className="stepper">
+        <div
+          className={`step-item ${isActive(1) ? 'active' : ''} ${isCompleted(1) ? 'completed' : ''}`}
+          onClick={() => onStepClick?.(1)}
+        >
+          {renderCircle(1)}
+          <div className="label">Add Skills</div>
+        </div>
+
+        <div className={`connector ${currentStep >= 2 ? 'active' : ''}`} />
+
+        <div
+          className={`step-item ${isActive(2) ? 'active' : ''} ${isCompleted(2) ? 'completed' : ''}`}
+          onClick={() => onStepClick?.(2)}
+        >
+          {renderCircle(2)}
+          <div className="label">Job Recommendations</div>
+        </div>
+
+        <div className={`connector ${currentStep >= 3 ? 'active' : ''}`} />
+
+        <div
+          className={`step-item ${isActive(3) ? 'active' : ''} ${isCompleted(3) ? 'completed' : ''}`}
+          onClick={() => onStepClick?.(3)}
+        >
+          {renderCircle(3)}
+          <div className="label">Missing Skills & Recommendations</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const BASE_URL = 'http://127.0.0.1:5000';
+const JOBS_PER_PAGE = 4;
+
+function App() {
   const [inputSkills, setInputSkills] = useState('');
   const [skillsList, setSkillsList] = useState([]);
   const [jobs, setJobs] = useState([]);
@@ -24,6 +150,8 @@ export default function App() {
   const [modalContent, setModalContent] = useState('');
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState('');
+  const [jobsPage, setJobsPage] = useState(1);
+  const [resumeName, setResumeName] = useState('');
 
   const openModal  = txt => { setModalContent(txt); setModalOpen(true); };
   const closeModal = ()   => setModalOpen(false);
@@ -39,15 +167,28 @@ export default function App() {
 
   const handleRemoveSkill = skill =>
     setSkillsList(prev => prev.filter(s => s !== skill));
-  const handleClearAll = () => setSkillsList([]);
+  const handleClearAll = () => {
+    setInputSkills('');
+    setSkillsList([]);
+  };
   const handleInputKeyDown = e => { if (e.key === 'Enter') handleAddSkills(e); };
 
   const handleResumeUpload = async e => {
     const file = e.target.files[0];
     if (!file) return;
+
+    // clear prior job & detail state on new resume
+    setJobs([]);
+    setSelectedJobIds([]);
+    setJobDetails([]);
+    setJobsError('');
+    setDetailsError('');
+    setJobsPage(1);
+
     setIsUploading(true);
     setUploadError('');
     setSkillsList([]);
+    setResumeName(file.name);
 
     const form = new FormData();
     form.append('resume', file);
@@ -87,6 +228,10 @@ export default function App() {
     }
   };
 
+  const clearResume = () => {
+    setResumeName('');
+  };
+
   const handleJobSearchSubmit = e => {
     e && e.preventDefault();
     if (!skillsList.length) {
@@ -95,6 +240,7 @@ export default function App() {
     }
     setJobsError(''); setJobs([]); setSelectedJobIds([]); setJobDetails([]);
     setIsLoadingJobs(true);
+    setJobsPage(1);
 
     fetch(`${BASE_URL}/jobs`, {
       method: 'POST',
@@ -149,82 +295,202 @@ export default function App() {
       });
   };
 
+  const handleResetAll = () => {
+    setInputSkills('');
+    setSkillsList([]);
+    setJobs([]);
+    setSelectedJobIds([]);
+    setJobDetails([]);
+    setJobsError('');
+    setDetailsError('');
+    setUploadError('');
+    setIsUploading(false);
+    setJobsPage(1);
+    setResumeName('');
+  };
+
+  const handleStepClick = step => {
+    if (step === 1) {
+      setJobs([]);
+      setSelectedJobIds([]);
+      setJobDetails([]);
+      setJobsError('');
+      setDetailsError('');
+      setJobsPage(1);
+    } else if (step === 2) {
+      setJobDetails([]);
+      setDetailsError('');
+    }
+  };
+
+  // current step logic
+  let currentStep = 1;
+  if (jobDetails.length > 0 || isLoadingDetails || detailsError) currentStep = 3;
+  else if (jobs.length > 0 || isLoadingJobs || jobsError) currentStep = 2;
+
+  // pagination
+  const totalPages = Math.max(1, Math.ceil(jobs.length / JOBS_PER_PAGE));
+  const startIdx = (jobsPage - 1) * JOBS_PER_PAGE;
+  const pagedJobs = jobs.slice(startIdx, startIdx + JOBS_PER_PAGE);
+
+  const handleNextPage = () => {
+    if (jobsPage < totalPages) setJobsPage(prev => prev + 1);
+  };
+  const handlePrevPage = () => {
+    if (jobsPage > 1) setJobsPage(prev => prev - 1);
+  };
+
   return (
     <div className="container">
       <Helmet><title>Skill Diagnostic Tool</title></Helmet>
 
       {/* Header */}
-      <header className="app-header-inner">
-        <img src={logo} alt="Logo" className="app-logo" />
-        <h1 className="app-header-text">Skill Diagnostic Tool</h1>
-        <p className="tagline">See Your Skills Clearly & Shape Your Future.</p>
-      </header>
-
-      {/* Search by Skills */}
-      <div className="card search-card">
-        <div className="card-header"><h2>Search Jobs by Skills</h2></div>
-        <p className="upload-hint">
-          Enter skills manually or upload your resume (PDF/DOCX only).
-        </p>
-        <div className="card-body">
-          <div className="skill-input-section">
-            <input
-              className="skill-input"
-              type="text"
-              placeholder="e.g. python, flask"
-              value={inputSkills}
-              onChange={e => setInputSkills(e.target.value)}
-              onKeyDown={handleInputKeyDown}
-            />
-            <button className="btn-add" onClick={handleAddSkills}>+ Add</button>
-            <label className="btn-upload">
-              {isUploading ? 'Uploading…' : 'Upload Resume'}
-              <input
-                type="file"
-                accept=".pdf,.docx"
-                onChange={handleResumeUpload}
-              />
-            </label>
+      <header className="app-header">
+        <div className="header-inner">
+          <div className="brand">
+            <div className="logo-box">
+              <img src={logo} alt="Skillnari logo" className="app-logo" />
+              <div className="brand-name">Skillnari</div>
+            </div>
+            <div className="titles">
+              <h1 className="app-header-text">Skill Diagnostic Tool</h1>
+              <p className="tagline">See Your Skills Clearly & Shape Your Future.</p>
+            </div>
           </div>
-          {uploadError && <p className="error upload-error">{uploadError}</p>}
-          <div className="skills-tags">
-            {skillsList.map((skill,i) => (
-              <span key={i} className="skill-tag">
-                {skill}
-                <button className="remove-skill" onClick={()=>handleRemoveSkill(skill)}>×</button>
-              </span>
-            ))}
-          </div>
-          <div className="action-row">
-            <button className="btn-search" onClick={handleJobSearchSubmit}>
-              🔍 Search Jobs
-            </button>
-            <button className="btn-clear" onClick={handleClearAll}>
-              Clear All
+          <div className="header-actions">
+            <div className="quick-stats">
+              <div className="stat">
+                <span className="stat-value">{skillsList.length}</span>
+                <span className="stat-label">Skills</span>
+              </div>
+              <div className="stat">
+                <span className="stat-value">{selectedJobIds.length}</span>
+                <span className="stat-label">Jobs Selected</span>
+              </div>
+            </div>
+            <button className="btn-reset" onClick={handleResetAll}>
+              Start Over
             </button>
           </div>
         </div>
-      </div>
+      </header>
 
-      {/* Job Recommendations */}
-      <div className="card rec-card">
-        <div className="card-header"><h2>Job Recommendations</h2></div>
-        <div className="card-body">
-          {isLoadingJobs && <Spinner />}
-          {jobsError && <p className="error">{jobsError}</p>}
-          <div className="job-list">
-            {jobs.map(job => (
-              <JobCard
-                key={job.id}
-                job={job}
-                checked={selectedJobIds.includes(job.id)}
-                onCheckboxChange={()=>handleCheckboxChange(job.id)}
+      {/* Stepper */}
+      <Stepper currentStep={currentStep} onStepClick={handleStepClick} />
+
+      {/* Top Section */}
+      <div className="top-section">
+        {/* Search by Skills */}
+        <div className="card search-card">
+          <div className="card-header"><h2>Search Jobs by Skills</h2></div>
+          <p className="upload-hint">
+            Enter skills manually or upload your resume (PDF/DOCX only).
+          </p>
+          <div className="card-body">
+            <div className="skill-input-section">
+              <input
+                className="skill-input"
+                type="text"
+                placeholder="e.g. python, flask"
+                value={inputSkills}
+                onChange={e => setInputSkills(e.target.value)}
+                onKeyDown={handleInputKeyDown}
               />
-            ))}
+              <button className="btn-add" onClick={handleAddSkills}>+ Add</button>
+              <label className="btn-upload">
+                {isUploading ? 'Uploading…' : 'Upload Resume'}
+                <input
+                  type="file"
+                  accept=".pdf,.docx"
+                  onChange={handleResumeUpload}
+                />
+              </label>
+            </div>
+            {resumeName && (
+              <div className="resume-info">
+                <span className="resume-label">Uploaded:</span>
+                <span className="resume-name">
+                  {resumeName}
+                  <button
+                    aria-label="Remove resume"
+                    onClick={clearResume}
+                    className="remove-resume-btn"
+                  >
+                    ×
+                  </button>
+                </span>
+              </div>
+            )}
+            {uploadError && <p className="error upload-error">{uploadError}</p>}
+            <div className="skills-tags">
+              {skillsList.map((skill,i) => (
+                <span key={i} className="skill-tag">
+                  {skill}
+                  <button className="remove-skill" onClick={()=>handleRemoveSkill(skill)}>×</button>
+                </span>
+              ))}
+            </div>
+            <div className="action-row">
+              <button className="btn-search" onClick={handleJobSearchSubmit}>
+                🔍 Search Jobs
+              </button>
+              <button className="btn-clear" onClick={handleClearAll}>
+                Clear All
+              </button>
+            </div>
           </div>
-          <button className="btn-getrec" onClick={handleGetRecommendations}>
-            Get Recommendations
-          </button>
+        </div>
+
+        {/* Job Recommendations */}
+        <div className="card rec-card">
+          <div className="card-header"><h2>Job Recommendations</h2></div>
+          <div className="card-body rec-body">
+            <div className="rec-main">
+              {isLoadingJobs && <Spinner />}
+              {jobsError && <p className="error">{jobsError}</p>}
+              <div className="job-list">
+                {pagedJobs.map(job => (
+                  <JobCard
+                    key={job.id}
+                    job={job}
+                    checked={selectedJobIds.includes(job.id)}
+                    onCheckboxChange={()=>handleCheckboxChange(job.id)}
+                  />
+                ))}
+              </div>
+
+              {/* Pagination */}
+              {jobs.length > JOBS_PER_PAGE && (
+                <div className="pagination">
+                  <div className="pagination-info">
+                    Page {jobsPage} of {totalPages} &middot; Showing {Math.min(startIdx + 1, jobs.length)}–{Math.min(startIdx + JOBS_PER_PAGE, jobs.length)} of {jobs.length}
+                  </div>
+                  <div className="pagination-controls">
+                    <button
+                      className="pagination-button"
+                      onClick={handlePrevPage}
+                      disabled={jobsPage === 1}
+                    >
+                      Previous
+                    </button>
+                    <button
+                      className="pagination-button"
+                      onClick={handleNextPage}
+                      disabled={jobsPage === totalPages}
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="rec-footer">
+              <button className="btn-getrec" onClick={handleGetRecommendations}>
+                Get Recommendations
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -264,7 +530,7 @@ export default function App() {
                     <tr key={idx}>
                       <td>{item.job.title}</td>
                       <td>{item.job.company}</td>
-                      <td>
+                      <td className="description-cell">
                         {shortDesc}
                         {desc.length>100 && (
                           <button
@@ -299,3 +565,13 @@ export default function App() {
     </div>
   );
 }
+
+ReactDOM.render(
+  <HelmetProvider>
+    <App />
+  </HelmetProvider>,
+  document.getElementById('root')
+);
+
+export default App;
+
