@@ -133,7 +133,8 @@ function Stepper({ currentStep, onStepClick }) {
   );
 }
 
-const BASE_URL = 'http://127.0.0.1:5000';
+// const BASE_URL = 'http://127.0.0.1:5000';
+const BASE_URL = "https://skilldiagonostictool.onrender.com"
 const JOBS_PER_PAGE = 4;
 
 function App() {
