@@ -1,77 +1,262 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
 
-/* ————— Global reset & base ————— */
+/* — Global Reset & Variables — */
 *,
 *::before,
-*::after {
-  box-sizing: border-box;
-}
-
+*::after { box-sizing: border-box; }
 :root {
-  --green:         #2e7d32;
-  --green-dark:    #1b5e20;
-  --green-light:   #e4f1e5;
-  --gray-200:      #ebeff4;
-  --gray-600:      #5f6773;
-  --font-base:     'Roboto', sans-serif;
+  --green:       #2e7d32;
+  --green-dark:  #1b5e20;
+  --green-light: #e4f1e5;
+  --gray-200:    #ebeff4;
+  --gray-600:    #5f6773;
+  --font-base:   'Roboto', sans-serif;
+  --app-bg: #f3f7fa;
 }
-
 body {
-  margin: 0;
-  padding: 0;
+  margin: 0; padding: 0;
   font-family: var(--font-base);
-  background-color: #fff;            /* 1) page background white */
+  background: var(--app-bg);
   color: #333;
 }
 
-/* ————— Container ————— */
+/* — Container & Layout — */
 .container {
-  max-width: 1000px;
+  max-width: 1200px;
   margin: 2rem auto;
   padding: 0 1rem;
   display: flex;
   flex-direction: column;
-  gap: 2rem;
-  background-color: #fff;           /* 1) ensure behind all cards is white */
+  gap: 2.5rem;
 }
 
-/* ————— Header ————— */
-.app-header-inner {
-  text-align: center;
+/* — Enhanced Header — */
+.app-header {
+  background: #fff;
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px -10px rgba(46,125,50,0.15);
+  margin-bottom: 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+.header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+  min-width: 0;
+}
+.logo-box {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
 }
 .app-logo {
-  height: 80px;
-  margin-bottom: 0.5rem;
+  height: 90px;
   transition: transform 0.2s;
 }
 .app-logo:hover {
   transform: scale(1.05);
 }
-/* 1) make title & tagline green‑tone */
+.brand-name {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--green);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-left: -15px;
+}
+.titles {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  margin-left: 10px;
+}
 .app-header-text {
-  color: var(--green);      /* “Skill Diagnostic Tool” in logo‑green */
-  font-size: 2.5rem;        /* preserve your size */
-  margin: 0; 
-  margin-bottom: 0.75rem;               /* reset any browser defaults */
-}
-
-.tagline {
-  margin-top: 0;
+  margin: 0;
+  font-size: 1.6rem;
   color: var(--green-dark);
-  font-size: 1.1rem;
+  font-weight: 600;
+  line-height: 1.1;
+  position: relative;
+}
+.app-header-text::after {
+  content: '';
+  display: block;
+  width: 45px;
+  height: 3px;
+  background: var(--green);
+  border-radius: 2px;
+  margin-top: 4px;
+}
+.tagline {
+  margin: 4px 0 0;
+  font-size: 0.75rem;
+  color: var(--green-dark);
+  font-weight: 500;
+}
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.quick-stats {
+  display: flex;
+  gap: 0.75rem;
+}
+.stat {
+  display: flex;
+  flex-direction: column;
+  background: var(--green-light);
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.65rem;
+  text-align: center;
+  min-width: 64px;
+}
+.stat-value {
+  font-weight: 700;
+  color: var(--green-dark);
+  display: block;
+  font-size: 0.95rem;
+  line-height: 1;
+}
+.stat-label {
+  color: #42504f;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 2px;
+}
+.btn-reset {
+  padding: 0.55rem 1rem;
+  font-size: 0.9rem;
+  border: 1px solid var(--green-dark);
+  background: #fff;
+  color: var(--green-dark);
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: background 0.2s, box-shadow 0.2s, color 0.2s;
+}
+.btn-reset:hover {
+  background: var(--green-light);
+  box-shadow: 0 4px 12px rgba(46,125,50,0.15);
 }
 
-/* ————— Section Cards ————— */
-.card {
+/* — Stepper with equal connectors — */
+.stepper-wrapper {
+  width: 100%;
+  padding: 0 1.5rem;
+  margin: 0 auto 1.5rem;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+}
+.stepper {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 1100px;
+}
+.step-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  flex: 0 0 auto;
+  min-width: 140px;
+  text-align: center;
+  font-family: var(--font-base);
+  transition: color 0.2s;
+  color: #444;
+}
+.step-item .circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid var(--green);
   background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 6px;
+  position: relative;
+  transition: background 0.2s, border-color 0.2s;
+  box-shadow: 0 8px 24px rgba(46,125,50,0.08);
+}
+.step-item .circle.completed {
+  background: var(--green);
+  border-color: var(--green-dark);
+}
+.step-item .number {
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--green-dark);
+}
+.step-item.active .circle {
+  background: var(--green);
+  border-color: var(--green-dark);
+}
+.step-item.active .number {
+  color: #fff;
+}
+.step-item .label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.1;
+  margin-top: 2px;
+  word-break: break-word;
+}
+.connector {
+  flex: 1;
+  height: 8px;
+  background: var(--gray-200);
+  border-radius: 4px;
+  margin: 0 12px;
+  transition: background 0.3s;
+}
+.connector.active {
+  background: var(--green);
+}
+
+/* — Top Section Flex for equal heights — */
+.top-section {
+  display: flex;
+  gap: 2rem;
+  align-items: stretch;
+  flex-wrap: wrap;
+}
+.top-section > .card {
+  flex: 1 1 0;
   display: flex;
   flex-direction: column;
 }
 
-/* Shared header/bar styling */
+/* — Card Base — */
+.card {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.04);
+  transition: box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.card:hover {
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+}
 .card-header {
   background: var(--green-light);
   padding: 1rem 1.5rem;
@@ -85,59 +270,159 @@ body {
   font-size: 1.4rem;
   color: var(--green-dark);
 }
-
-/* Body area */
 .card-body {
-  padding: 1.5rem;
+  padding: 2rem;
+  flex: 1;
 }
 
-/* ————— Search‑Skills Card ————— */
-.search-card .card-header { /* already has green‑light bg + bottom border */ }
-.skill-input-section {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 0.5rem;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-.skill-input-section input {
-  width: 100%;
-  padding: 0.75rem 1rem;
-  border: 1px solid var(--gray-200);
-  border-radius: 4px;
-  font-size: 1rem;
-}
-.btn-add,
-.btn-search {
-  padding: 0.75rem 1.2rem;
+/* — Search-Skills Card — */
+.search-card .card-header { border-bottom-width: 2px; }
+.search-card .card-body { padding-top: 1rem; }
+.upload-hint {
+  margin: 0.5rem 1.5rem 0;
   font-size: 0.95rem;
-  border-radius: 4px;
+  color: var(--gray-600);
+}
+
+/* — Resume info display — */
+.resume-info {
+  margin: 0.75rem 1.5rem 1.5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.9rem;
+}
+.resume-label {
+  font-weight: 600;
+  color: #444;
+}
+.resume-name {
+  background: #fff;
+  padding: 6px 14px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+  color: var(--green-dark);
+  border: 1px solid var(--green);
+  box-shadow: 0 4px 16px rgba(46,125,50,0.08);
+  position: relative;
+}
+.remove-resume-btn {
+  background: none;
+  border: none;
+  font-size: 1rem;
+  line-height: 1;
   cursor: pointer;
-  border: 1px solid transparent;
-  transition: all 0.15s ease-in-out;
+  padding: 0;
+  color: var(--green-dark);
+}
+.remove-resume-btn:hover {
+  opacity: 0.7;
+}
+
+/* — Inputs & Buttons — */
+.skill-input-section {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+.skill-input {
+  flex: 1; min-width: 0;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  border: 1px solid var(--gray-200);
+  border-radius: 6px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.skill-input:focus {
+  outline: none;
+  border-color: var(--green);
+  box-shadow: 0 0 0 2px rgba(46,125,50,0.2);
 }
 .btn-add {
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+  border: 1px solid var(--gray-200);
   background: #fff;
-  color: var(--green);
-  border-color: var(--green);
+  color: var(--gray-600);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s;
 }
 .btn-add:hover {
+  background: var(--gray-200);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+.btn-upload {
+  position: relative;
+  padding: 0.75rem 1.25rem;
+  font-size: 1rem;
+  border: none;
   background: var(--green);
   color: #fff;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.btn-upload:hover {
+  background: var(--green-dark);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.btn-upload input {
+  position: absolute;
+  inset: 0;
+  width: 100%; height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+.action-row {
+  display: flex; align-items: center; gap: 1rem; margin-top: 1rem;
+  flex-wrap: wrap;
 }
 .btn-search {
+  display: inline-flex; align-items: center;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
   background: var(--green);
   color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s;
 }
 .btn-search:hover {
   background: var(--green-dark);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
-
-/* Skill tags */
+.btn-clear {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  border: 1px solid var(--gray-600);
+  background: #fff;
+  color: var(--gray-600);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.btn-clear:hover {
+  background: var(--gray-200);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+.upload-error {
+  margin: 0.25rem 1.5rem 0;
+  font-size: 0.9rem;
+  color: #c62828;
+}
 .skills-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
+  display: flex; 
+  flex-wrap: wrap; 
+  gap: 0.5rem; 
+  margin-bottom: 1rem;
+  margin-top: 0;
 }
 .skill-tag {
   display: inline-flex;
@@ -150,49 +435,152 @@ body {
   box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 .remove-skill {
+  margin-left: 0.5rem;
   background: none;
   border: none;
-  margin-left: 0.5rem;
   font-size: 1.2rem;
   cursor: pointer;
   color: var(--green-dark);
 }
-.remove-skill:hover {
-  opacity: 0.6;
-}
+.remove-skill:hover { opacity: 0.6; }
 
-/* ————— Job Recommendations Card ————— */
-.rec-card .card-header { /* header bg + border already set */ }
-.rec-card .btn-getrec {
+/* — Recommendations & Table — */
+.rec-card .card-header {}
+.rec-body {
+  display: flex;
+  flex-direction: column;
+}
+.rec-main {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.rec-footer {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: flex-start;
+}
+.btn-getrec {
   padding: 0.6rem 1rem;
   background: var(--green);
   color: #fff;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   font-size: 0.95rem;
   cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s;
 }
-.rec-card .btn-getrec:hover {
+.btn-getrec:hover {
   background: var(--green-dark);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+.job-list {
+  display: flex; flex-wrap: wrap; gap: 1.25rem; justify-content: flex-start;
+}
+.details-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+.details-table th,
+.details-table td {
+  border: 1px solid var(--gray-200);
+  padding: 0.75rem 1rem;
+  text-align: left;
+  vertical-align: top;
+}
+.details-table th {
+  background: var(--green-light);
+  color: var(--green-dark);
+  font-weight: 500;
+}
+.description-cell {
+  max-width: 300px;
+  white-space: normal;
+  word-break: break-word;
+}
+.show-more {
+  background: none;
+  border: none;
+  color: var(--green-dark);
+  cursor: pointer;
+  font-size: 0.9rem;
+  margin-left: 0.25rem;
 }
 
-/* ————— Job list flex ————— */
-.job-list {
+/* — Pagination Controls — */
+.pagination {
   display: flex;
   flex-wrap: wrap;
-  gap: 1.25rem;
-  justify-content: center;  /* center every row, even the last one */
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+.pagination-info {
+  font-size: 0.85rem;
+  color: #444;
+}
+.pagination-controls {
+  display: flex;
+  gap: 0.5rem;
+}
+.pagination-button {
+  padding: 0.5rem 0.85rem;
+  border-radius: 6px;
+  border: 1px solid var(--green-dark);
+  background: #fff;
+  cursor: pointer;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 0.75rem;
+  transition: background 0.2s;
+}
+.pagination-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.pagination-button:not(:disabled):hover {
+  background: var(--green-light);
 }
 
-/* ————— Job card ————— */
+/* — Spinner, Placeholder, Errors — */
+.spinner {
+  width: 70px;
+  margin: 2rem auto;
+  text-align: center;
+}
+.spinner > div {
+  width: 18px;
+  height: 18px;
+  background: var(--green);
+  border-radius: 100%;
+  display: inline-block;
+  animation: bouncedelay 1.4s infinite ease-in-out both;
+}
+@keyframes bouncedelay {
+  0%, 80%, 100% { transform: scale(0); }
+  40% { transform: scale(1.0); }
+}
+.placeholder {
+  color: var(--gray-600);
+  font-style: italic;
+}
+.error {
+  color: #c62828;
+  margin: 1rem 0;
+}
+
+/* — JobCard styles — */
 .job-card {
   flex: 0 0 240px;
   background: #fafafa;
   border: 1px solid var(--gray-200);
   border-radius: 12px;
-  overflow: hidden;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
   transition: transform 0.15s, box-shadow 0.15s;
 }
 .job-card:hover {
@@ -212,8 +600,6 @@ body {
 .job-card-body {
   padding: 1rem;
   flex: 1;
-  border-bottom-left-radius: 12px;
-  border-bottom-right-radius: 12px;
 }
 .job-title {
   margin: 0;
@@ -242,66 +628,69 @@ body {
   color: var(--gray-600);
 }
 
-/* ————— Missing Skills Card ————— */
-.details-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 1rem;
+/* — Modal styles — */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.4);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000;
 }
-.details-table th,
-.details-table td {
-  border: 1px solid var(--gray-200);
-  padding: 0.75rem 1rem;
-  text-align: left;
-  vertical-align: top;
+.modal-content {
+  background: #fff;
+  border-radius: 8px;
+  width: 90%; max-width: 600px;
+  max-height: 80%;
+  padding: 1.5rem;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.2);
 }
-.details-table th {
-  background: var(--green-light);
-  color: var(--green-dark);
-  font-weight: 500;
-}
-.show-more {
+.modal-close {
+  position: absolute;
+  top: 0.5rem; right: 0.75rem;
   background: none;
   border: none;
-  color: var(--green-dark);
+  font-size: 1.5rem;
   cursor: pointer;
-  font-size: 0.9rem;
-  margin-left: 0.25rem;
+  color: #555;
+}
+.modal-body {
+  white-space: pre-wrap;
+  line-height: 1.5;
 }
 
-/* ————— Spinner & placeholders ————— */
-.spinner {
-  width: 70px;
-  margin: 2rem auto;
-  text-align: center;
-}
-.spinner > div {
-  width: 18px;
-  height: 18px;
-  background: var(--green);
-  border-radius: 100%;
-  display: inline-block;
-  animation: bouncedelay 1.4s infinite ease-in-out both;
-}
-@keyframes bouncedelay {
-  0%, 80%, 100% { transform: scale(0); }
-  40% { transform: scale(1.0); }
-}
-.placeholder {
-  color: var(--gray-600);
-  font-style: italic;
-}
-.error {
-  color: #c62828;
-  margin: 1rem 0;
-}
-
-/* ————— Responsive tweaks ————— */
-@media (max-width: 640px) {
-  .skill-input-section {
-    grid-template-columns: 1fr auto;
+/* — Responsive — */
+@media (max-width: 1100px) {
+  .top-section {
+    flex-direction: column;
   }
-  .btn-search {
-    grid-column: 1 / -1;
+}
+@media (max-width: 1000px) {
+  .app-header-text {
+    font-size: 1.5rem;
+    text-align: left;
+  }
+  .header-inner {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .header-actions {
+    justify-content: flex-start;
+  }
+  .titles {
+    margin-top: 4px;
+  }
+}
+@media (max-width: 700px) {
+  .quick-stats {
+    order: 2;
+    gap: 0.5rem;
+  }
+  .header-actions {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
   }
 }

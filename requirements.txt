@@ -3,3 +3,5 @@ Flask
 flask-cors
 gunicorn
 rapidfuzz
+pdfplumber
+python-docx
